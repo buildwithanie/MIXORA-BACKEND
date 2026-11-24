@@ -99,8 +99,19 @@ test("disabled and expired D1 grants cannot authorize staff actions", async () =
     await assert.rejects(authorize(), (error: unknown) => error instanceof StaffAccessError && error.status === 403);
     database.prepare("UPDATE catalog_staff_roles SET expires_at=NULL").run();
     assert.equal(requireStaffRole(await authorize(), "RIGHTS_REVIEWER"), humanSubject);
-    await assert.rejects(authorizeStaffRequest(new Request("https://example.test"), "RIGHTS_REVIEWER"),
-      (error: unknown) => error instanceof StaffAccessError && error.status === 401);
+    const oldDomain = process.env.CF_ACCESS_TEAM_DOMAIN;
+    const oldAudience = process.env.CF_ACCESS_AUD;
+    try {
+      process.env.CF_ACCESS_TEAM_DOMAIN = config.issuer;
+      process.env.CF_ACCESS_AUD = config.audience;
+      await assert.rejects(authorizeStaffRequest(new Request("https://example.test"), "RIGHTS_REVIEWER"),
+        (error: unknown) => error instanceof StaffAccessError && error.status === 401);
+    } finally {
+      if (oldDomain === undefined) delete process.env.CF_ACCESS_TEAM_DOMAIN;
+      else process.env.CF_ACCESS_TEAM_DOMAIN = oldDomain;
+      if (oldAudience === undefined) delete process.env.CF_ACCESS_AUD;
+      else process.env.CF_ACCESS_AUD = oldAudience;
+    }
   } finally {
     globals.mixoraD1Database = previous;
     database.close();
