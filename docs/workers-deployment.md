@@ -1,11 +1,11 @@
 # MIXORA backend Worker preparation
 
-This project is the real Next.js backend. `mixora-staff-login` is a separate Worker and is not part of this deployment. Nothing in this document has been deployed.
+This project is the real Next.js backend. `mixora-staff-login` is a separate Worker. The existing `mixora-backend` Worker is already deployed; this guide covers future releases.
 
 ## Deployment target and adapter
 
 - Worker name: `mixora-backend`.
-- Planned URL: `https://mixora-backend.buildwithanie.workers.dev`. This URL must be checked after the first deployment; it is not a currently verified live endpoint.
+- Production URL: `https://mixora-backend.buildwithanie.workers.dev`. Verify it again after each release.
 - `cloudflare.config.ts` explicitly sets `previewUrls: false` so Version URLs remain disabled. Keep the intended production `workers.dev` hostname available for the public catalogue. Verify the effective deployment configuration before deployment and the actual Cloudflare setting afterward; do not assume the local setting proves the remote state. Do not create separate Worker Previews without their own Access protection. Check every reachable custom domain, route, and alternate hostname for staff Access coverage.
 - Primary adapter: vinext for Cloudflare. It builds the existing App Router and route handlers with Vite on Windows. `pnpm dev` and `pnpm build` remain available for the original Next.js development workflow.
 - The OpenNext configuration remains only as a fallback. Its package step fails on this Windows machine because of a symbolic-link permission error. Do not use the `worker:*` scripts or `wrangler.jsonc` for the planned deployment.
@@ -29,7 +29,7 @@ The staff routes require these production secrets:
 | `CF_ACCESS_AUD` | Audience of the separate backend staff Access application; it must match the application protecting the backend staff paths |
 | `MIXORA_AUDIT_HMAC_KEY` | Existing audit-chain signing key; changing it invalidates historical verification |
 
-Use a gitignored `.worker.secrets` file containing **only** those three entries when deployment is authorised. Do not copy `.env.local` wholesale into a Worker. For a first vinext deployment, `cf deploy --prebuilt --mode production --secrets-file .worker.secrets` supplies them alongside the already built code. This command **deploys** and must not be run during preparation. Keep that file private and remove it securely after deployment. Do not create a new audit key in place of the existing one. The current local build-output scan found no configured token or key values in generated Worker files. An earlier credential-exposure concern remains unresolved; determine whether any value actually left the trusted machine before deployment, and preserve audit-key continuity if rotation is required.
+For GitHub Actions releases to the existing Worker, keep these three runtime secrets in Cloudflare. Deploy without `--secrets-file`; Cloudflare preserves existing secret bindings on code deployments. GitHub needs only a scoped Worker deployment token. Do not copy `.env.local` or the runtime secret values into GitHub. Verify the secret binding names after each approved release; preserve audit-key continuity.
 
 The existing `mixora-team` Access application protects the separate staff-login Worker. The separate backend staff Access application must protect both `/api/staff` and `/api/staff/*` on the backend hostname, with its own AUD supplied as `CF_ACCESS_AUD`. A wildcard child path does not protect the parent path. The route code checks signature, issuer, audience, expiry, human identity, and active D1 roles; it does not accept a free-form reviewer ID. Do not add a broad bypass for browser convenience.
 
@@ -51,4 +51,4 @@ No Android project files or existing D1/R2 data are changed by this preparation.
 
 ## Release traceability and recovery
 
-Follow [administrator extension and first release](admin-extension-release.md). A local Git snapshot is needed before deployment. There is no previous backend Worker version for the first release, so production rollback must be planned as an incident action. A D1 Time Travel restore is not a Worker-code rollback.
+Follow [administrator extension and first release](admin-extension-release.md). A local Git snapshot is needed before deployment. The existing backend Worker has prior versions; plan code rollback through Worker versions and verify the rollback target before use. A D1 Time Travel restore is not a Worker-code rollback.

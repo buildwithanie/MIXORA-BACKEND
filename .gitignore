@@ -3,9 +3,10 @@ node_modules/
 .open-next/
 .wrangler/
 cloudflare-env.d.ts
-.worker.secrets
+.worker.secrets*
 .worker-build-env-hold/
 .env*
+.dev.vars*
 !.env.example
 data/
 *.tsbuildinfo
