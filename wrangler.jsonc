@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mixora-backend",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-20",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "mixora-backend" }],
+  "vars": {
+    "MIXORA_WORKER": "1",
+    "PUBLIC_CATALOG_ORIGIN": "https://mixora-backend.buildwithanie.workers.dev"
+  },
+  "d1_databases": [{
+    "binding": "MIXORA_DB",
+    "database_name": "mixora-db",
+    "database_id": "99e8537b-bd8a-4ab7-815e-7fd2497b157b"
+  }],
+  "r2_buckets": [
+    { "binding": "MIXORA_AUDIO", "bucket_name": "mixora-audio" },
+    { "binding": "MIXORA_AGREEMENTS", "bucket_name": "mixora-legal-agreements" }
+  ]
+}

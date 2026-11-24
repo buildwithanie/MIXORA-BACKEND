@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.open-next/
+.wrangler/
+cloudflare-env.d.ts
+.worker.secrets
+.worker-build-env-hold/
+.env*
+!.env.example
+data/
+*.tsbuildinfo
+/dist/
+.vinext/
+.cloudflare/
